@@ -3,10 +3,10 @@
 # +Додамо поле для дня народження Birthday. Це поле не обов'язкове, але може бути тільки одне.
 # +Додамо функціонал роботи з Birthday у клас Record, а саме функцію days_to_birthday, яка повертає кількість днів до наступного дня народження.
 # +Додамо функціонал перевірки на правильність наведених значень для полів Phone, Birthday.
-# Додамо пагінацію (посторінковий висновок) для AddressBook для ситуацій, коли книга дуже велика і треба показати вміст частинами, а не все одразу. Реалізуємо це через створення ітератора за записами.
+# -?Додамо пагінацію (посторінковий висновок) для AddressBook для ситуацій, коли книга дуже велика і треба показати вміст частинами, а не все одразу. Реалізуємо це через створення ітератора за записами.
 
 # Критерії прийому:
-# AddressBook реалізує метод iterator, який повертає генератор за записами AddressBook і за одну ітерацію повертає уявлення для N записів.
+# +AddressBook реалізує метод iterator, який повертає генератор за записами AddressBook і за одну ітерацію повертає уявлення для N записів.
 # +Клас Record приймає ще один додатковий (опціональний) аргумент класу Birthday
 # +Клас Record реалізує метод days_to_birthday, який повертає кількість днів до наступного дня народження контакту, якщо день народження заданий.
 # +setter та getter логіку для атрибутів value спадкоємців Field.
@@ -95,7 +95,6 @@ class Record:
         self.phone[index] = new_phone
 
     def days_to_birthday(self, birthday): #повертає кількість днів до наступного дня народження
-        # bd = Birthday(birthday) # birthday in format: 22.09.2000
         current_date = datetime.now().date()
         if birthday:
             birthday_date = birthday.replace(year=datetime.now().year).date() 
@@ -110,6 +109,8 @@ class Record:
 
 
 class AddressBook(UserDict):
+    count = 0
+
     def add_record(self, record: Record):
         self.data[record.name.value] = record # питання Чому? - тут саме треба записувати увесь обьект классу Record
         ''' я бачу цей запис в такому вигляді:
@@ -121,11 +122,23 @@ class AddressBook(UserDict):
     
     def find_record(self, value):
         return self.data.get(value)
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        self.count += 1
+        if self.count > len(self.data):
+            raise StopIteration
+        else:
+            return self.data[list(self.data.keys())[self.count-1]]
+
 
 
 
 # ### Checking mentor
 if __name__ == "__main__":
+    # record contact 1
     name = Name('Bill')
     phone = Phone(123456789012)
     birthday = Birthday(datetime(1990, 8, 3))
@@ -136,6 +149,19 @@ if __name__ == "__main__":
     print(rec.birthday.value)
     print(rec.days_to_birthday(datetime(1990, 8, 3)))
     print(rec.phone)
+    # record contac 2
+    name2 = Name('Mary')
+    phone2 = Phone(987654321012)
+    birthday2 = Birthday(datetime(1993, 9, 25))
+    rec2 = Record(name2, phone2, birthday2)
+    ab.add_record(rec2)
+    print(ab)
+    print(rec2.birthday.value)
+    print(rec2.days_to_birthday(datetime(1993, 9, 25)))
+    print(rec2.phone)
+    # checking iter Address Book
+    for contact in ab:
+        print(contact)
     ##print(isinstance(ab['Bill'], Record))
     assert isinstance(ab['Bill'], Record) # оператор assert працює так, він порівнює щось, я якщо це порівняння дає false - він викликає помилку
     ##print(isinstance(ab['Bill'].name, Name))
