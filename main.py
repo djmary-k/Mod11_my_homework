@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 class Field:
     def __init__(self, value):
         self.value = value
-        print(f'from Field: {self.value}')
+        # print(f'from Field: {self.value}')
 
 
 class Name(Field):
@@ -77,7 +77,7 @@ class Record:
             self.phone.append(phone)
 
     def __str__(self):
-        return f"{self.name.value} {self.phone} {self.birthday.value}"
+        return f"{self.name.value} {[ph.value for ph in self.phone]} {self.birthday.value}"
         
     def add_phone(self, phone):
         phone_number = Phone(phone)
@@ -112,12 +112,7 @@ class AddressBook(UserDict):
     count = 0
 
     def add_record(self, record: Record):
-        self.data[record.name.value] = record # питання Чому? - тут саме треба записувати увесь обьект классу Record
-        ''' я бачу цей запис в такому вигляді:
-        {'Bill': ['1234567890']} тому мені здається що має бути такий запис self.data[record.name.value] = record.phone.value
-        не розумію чому треба присвоювати увесь обьект классу Record, адже він повертає і"мя та список з телефоними чи ні? здається я вже запуталась..
-        поясніть будь ласка
-        '''
+        self.data[record.name.value] = record
         # {‘Bill’: “Bill 0987777 22.09.2000”} - результат add_record
     
     def find_record(self, value):
