@@ -109,7 +109,7 @@ class Record:
 
 
 class AddressBook(UserDict):
-    count = 0
+    N = 2 # чому 2?
 
     def add_record(self, record: Record):
         self.data[record.name.value] = record
@@ -118,15 +118,54 @@ class AddressBook(UserDict):
     def find_record(self, value):
         return self.data.get(value)
     
-    def __iter__(self):
-        return self
+    def iterator(self, n) -> list[dict]:
+        contact_list = []  # список записів контактів
+        if n:
+            AddressBook.N = n
+        for record in self.data.values():
+            contact_list.append(record)
+        return self.__next__(contact_list)
     
-    def __next__(self):
-        self.count += 1
-        if self.count > len(self.data):
-            raise StopIteration
-        else:
-            return self.data[list(self.data.keys())[self.count-1]]
+    # def __iter__(self):
+    #     return self
+    
+    # def __next__(self):
+    #     self.count += 1
+    #     if self.count > len(self.data):
+    #         raise StopIteration
+    #     else:
+    #         return self.data[list(self.data.keys())[self.count-1]]
+
+    def __iter__(self, contact_list: list[dict]):
+        n_list = []
+        counter = 0
+        for contact in contact_list:
+            n_list.append(contact)
+            counter += 1
+            if counter >= AddressBook.N:  # якщо вже створено список із заданої кількості записів
+                yield n_list
+                n_list.clear()
+                counter = 0
+        yield n_list
+
+    def __next__(self, contact_list):
+        generator = self.__iter__(contact_list)
+        page = 1
+        while True:
+            user_input = input("Press ENTER")
+            if user_input == "":
+                try:
+                    result = next(generator)
+                    if result:
+                        print(f"{'*' * 20} Page {page} {'*' * 20}")
+                        page += 1
+                    for var in result:
+                        print(var)
+                except StopIteration:
+                    print(f"{'*' * 20} END {'*' * 20}")
+                    break
+            else:
+                break
 
 
 
@@ -154,9 +193,7 @@ if __name__ == "__main__":
     print(rec2.birthday.value)
     print(rec2.days_to_birthday(datetime(1993, 9, 25)))
     print(rec2.phone)
-    # checking iter Address Book
-    for contact in ab:
-        print(contact)
+
     ##print(isinstance(ab['Bill'], Record))
     assert isinstance(ab['Bill'], Record) # оператор assert працює так, він порівнює щось, я якщо це порівняння дає false - він викликає помилку
     ##print(isinstance(ab['Bill'].name, Name))
@@ -167,5 +204,29 @@ if __name__ == "__main__":
     assert isinstance(ab['Bill'].phone[0], Phone)
     ##print(ab['Bill'].phone[0].value == '1234567890')
     assert ab['Bill'].phone[0].value == 123456789012
+
+    
+    """Додамо контактів для перевірки ітератора"""
+    name = Name('Bob')
+    phone = Phone(123456789012)
+    birthday = Birthday(datetime(1980, 1, 31))
+    rec2 = Record(name, phone, birthday)
+
+    name = Name('Tom')
+    phone = Phone(123456789012)
+    birthday = Birthday(datetime(1992, 12, 13))
+    rec3 = Record(name, phone, birthday)
+
+    name = Name('Bard')
+    phone = Phone(123456789012)
+    birthday = Birthday(datetime(2000, 4, 10))
+    rec4 = Record(name, phone, birthday)
+
+    ab.add_record(rec2)
+    ab.add_record(rec3)
+    ab.add_record(rec4)
+
+    ab.iterator(n=3)
+    
     print('All Ok)')
 
